@@ -139,11 +139,20 @@ Pada tahap ini kita akan melakukan proses transformasi pada data sehingga menjad
 4. Pembagian dataset dengan fungsi train_test_split dari library sklearn.
 
 ### Drop kolom yang tidak digunakan dalam pemrosesan data
-Pada tahap ini ada beberapa kolom pada dataset yang tidak perlu digunakan dalam pemrosesan data yakni id. Kolom-kolom ini akan dihapus menggunakan fungsi drop(). Sehingga hasilnya:
+Pada tahap ini ada beberapa kolom pada dataset yang tidak perlu digunakan dalam pemrosesan data yakni id. Hal ini dilakukan karena data pada kolom tersebut tidak memiliki dampak tambahan informasi yang membantu model belajar, beresiko menyebabkan overfit dan bisa saja menciptakan kolerasi palsu. Kolom ini akan dihapus menggunakan fungsi drop(). Sehingga hasilnya:
 ![alt text](img/no-id-column.png)
 
 ### Pembersihan data
-Disini kita akan drop data null, data unknown pada kolom `smoking_status`, data other pada `gender` dan pembersihan outliers untuk kolom `bmi` dan `avg_glucose_level`. Sehingga hasilnya:
+Disini kita akan drop data null, data unknown pada kolom `smoking_status`, data other pada `gender` dan pembersihan outliers untuk kolom `bmi` dan `avg_glucose_level`. Kita melakukan proses berikut karena kebersihan dan kualitas data sangat penting untuk mendapatkan model machine learning yang akurat dan tidak bias. Adapun untuk detail alasannya adalah : 
+#### 🔍 Drop Data Null & Unknown pada smoking_status
+  - Alasan: Data null (kosong) dan nilai 'Unknown' pada smoking_status menunjukkan ketidakpastian atau ketidaktahuan tentang status merokok pasien.
+  - Risiko: Jika dibiarkan, ini bisa membingungkan model atau mengurangi keakuratan karena data tidak lengkap atau ambigu.
+#### 🚻 Drop Data 'Other' pada Kolom gender
+  - Alasan: Nilai 'Other' tidak valid karena gender yang dimaksud disini adalah jenis kelamin. Hanya ada 2 jenis kelamin (male / female) 
+#### 🧼 Pembersihan Outliers pada bmi dan avg_glucose_level
+  - Alasan: Outliers adalah nilai ekstrim (sangat tinggi atau sangat rendah) yang tidak mencerminkan data mayoritas.
+  - Risiko: Dapat menggeser distribusi data. Mempengaruhi mean, standar deviasi, dan keputusan model, terutama model seperti Logistic Regression.
+Sehingga hasilnya:
 ![alt text](img/cleaned-data.png)
 Lalu kita hapus outliers di kolom `bmi` dan `avg_glucose_level` sehingga data kita tersisa 2890
 ![alt text](img/new-data.png)
@@ -166,8 +175,51 @@ Disini kita akan melakukan pemilihan model dengan cara kita latih beberapa model
 ### Model 1: Logistic Regression
 Logistic Regression adalah model yang mudah dipahami dan ditafsirkan, terutama dalam konteks klasifikasi biner seperti kasus prediksi stroke (0 = tidak stroke, 1 = stroke). Setiap koefisien pada model bisa menunjukkan hubungan log odds antara fitur dengan kemungkinan terjadinya stroke.
 
+#### Tahap pemodelan (Model 1)
+  1. Import Library dan Model
+    `from sklearn.linear_model import LogisticRegression`
+    - Kita menggunakan Logistic Regression dari `sklearn.linear_model`, salah satu model yang umum digunakan untuk kasus klasifikasi biner, seperti prediksi stroke (yes/no).
+  2. Instansiasi Model
+    `logreg = LogisticRegression(max_iter=1000, random_state=42)`
+    - `max_iter=1000`:
+    Menentukan jumlah iterasi maksimum agar algoritma konvergen saat mencari parameter terbaik. Default-nya hanya 100, tapi jika dataset cukup kompleks atau besar, nilai ini perlu ditingkatkan agar model sempat menyelesaikan proses pelatihan.
+    - `random_state=42`:
+    Untuk memastikan hasil yang konsisten setiap kali model dijalankan. Ini penting untuk reprodusibilitas (jika tidak diberi ini hasil berubah-ubah).
+  3. Training Model
+    `logreg.fit(X_train_smote, y_train_smote)`
+    - Model dilatih menggunakan data pelatihan yang sudah diseimbangkan oleh SMOTE (`X_train_smote`, `y_train_smote`) untuk mengatasi masalah data tidak seimbang (stroke vs non-stroke).
+  4. Melakukan Prediksi
+    `y_pred_logreg = logreg.predict(X_test)`
+    - Model digunakan untuk memprediksi kelas pada data uji (`X_test`), menghasilkan label: apakah pasien berisiko stroke atau tidak.
+  5. Prediksi Probabilitas
+    `y_pred_proba_logreg = logreg.predict_proba(X_test)[:, 1]`
+    - Menghasilkan probabilitas dari setiap prediksi, terutama kemungkinan kelas “Stroke” (kelas 1).
+
 ### Model 2 : RandomForest
 Kita mempertimbangkan Random Forest (RF) dalam proyek prediksi stroke karena model ini sangat kuat dan fleksibel, terutama untuk menangani data tabular.
+
+#### Tahap pemodelan (Model 2)
+  1. Import Library dan Model
+    `from sklearn.ensemble import RandomForestClassifier`
+    - Kita menggunakan model Random Forest dari sklearn.ensemble, yaitu metode ensemble learning berbasis pohon keputusan (decision trees).
+    - Cocok untuk data tabular dan klasifikasi biner, termasuk kasus prediksi stroke.
+  2. Instansiasi Model
+    `rf = RandomForestClassifier(n_estimators=100, max_depth=10, random_state=42)`
+    - `n_estimators=100`:
+    Jumlah pohon (trees) dalam hutan. Semakin banyak, semakin baik dalam stabilitas prediksi—namun lebih berat secara komputasi. (Jumlah 100 biasanya sudah cukup untuk awal).
+    - `max_depth=10`:
+    Membatasi kedalaman maksimal tiap pohon. Ini dilakukan untuk mencegah overfit. Depth 10 relatif seimbang antara kompleksitas dan generalisasi.
+    - `random_state=42`:
+    Untuk memastikan hasil yang konsisten setiap kali model dijalankan. Ini penting untuk reprodusibilitas (jika tidak diberi ini hasil berubah-ubah).
+  3. Training Model
+    `rf.fit(X_train_smote, y_train_smote)`
+    - Model dilatih menggunakan data pelatihan yang sudah diseimbangkan oleh SMOTE (`X_train_smote`, `y_train_smote`) untuk mengatasi masalah data tidak seimbang (stroke vs non-stroke).
+  4. Melakukan Prediksi
+    `y_pred_rf = rf.predict(X_test)`
+    - Model digunakan untuk memprediksi kelas pada data uji (`X_test`), menghasilkan label: apakah pasien berisiko stroke atau tidak.
+  5. Prediksi Probabilitas
+    `y_pred_proba_rf = rf.predict_proba(X_test)[:,1]`
+    - Menghasilkan probabilitas dari setiap prediksi, terutama kemungkinan kelas “Stroke” (kelas 1).
 
 ### Model 3 : XGBoost Classifier
 Kita mempertimbangkan XGBoost Classifier dalam proyek prediksi stroke karena:
@@ -176,10 +228,53 @@ Kita mempertimbangkan XGBoost Classifier dalam proyek prediksi stroke karena:
   - XGBoost memiliki mekanisme regularisasi bawaan untuk mengurangi overfitting.
   - Meskipun imbalance data telah ditangani dengan SMOTE, XGBoost tetap menjadi pilihan kuat karena kemampuannya menjaga kinerja tinggi pada data dengan kompleksitas fitur tinggi.
 
+#### Tahap pemodelan (Model 3)
+  1. Import Library dan Model
+    `from xgboost import XGBClassifier`
+    - Mengimpor model XGBoost, yaitu Extreme Gradient Boosting, salah satu algoritma boosting yang sangat powerful untuk klasifikasi dengan performa tinggi dan efisiensi komputasi.
+  2. Instansiasi Model
+    `xgb = XGBClassifier(use_label_encoder=False, eval_metric='logloss', random_state=42)`
+    - `use_label_encoder=False`:
+    Menghindari penggunaan label encoder bawaan XGBoost (karena sudah deprecated).
+    - `eval_metric='logloss'`:
+    Mengatur metrik evaluasi yang digunakan saat training menjadi logarithmic loss, Ini mengukur seberapa "percaya diri" model terhadap prediksi probabilitasnya.
+    - `random_state=42`:
+    Untuk memastikan hasil yang konsisten setiap kali model dijalankan. Ini penting untuk reprodusibilitas (jika tidak diberi ini hasil berubah-ubah).
+  3. Training Model
+    `xgb.fit(X_train_smote, y_train_smote)`
+    - Model dilatih menggunakan data pelatihan yang sudah diseimbangkan oleh SMOTE (`X_train_smote`, `y_train_smote`) untuk mengatasi masalah data tidak seimbang (stroke vs non-stroke).
+  4. Melakukan Prediksi
+    `y_pred_xgb = xgb.predict(X_test)`
+    - Model digunakan untuk memprediksi kelas pada data uji (`X_test`), menghasilkan label: apakah pasien berisiko stroke atau tidak.
+  5. Prediksi Probabilitas
+    `y_pred_proba_xgb = xgb.predict_proba(X_test)[:,1]`
+    - Menghasilkan probabilitas dari setiap prediksi, terutama kemungkinan kelas “Stroke” (kelas 1).
+
+
 ### Model 4 : AdaBoost Classifier
 Kita menggunakan AdaBoost karena dia bisa meningkatkan kinerja prediksi dari model sederhana dengan memperbaiki kesalahan secara adaptif, cocok untuk data stroke yang bersih dan memiliki ketidakseimbangan kelas.
 
-
+#### Tahap pemodelan (Model 4)
+  1. Import Library dan Model
+    `from sklearn.ensemble import AdaBoostClassifier`
+    - Mengimpor algoritma AdaBoost (Adaptive Boosting) dari sklearn. Boosting adalah metode ensemble yang membangun model kuat dari beberapa model lemah (biasanya decision stumps).
+  2. Instansiasi Model
+    `ada = AdaBoostClassifier(n_estimators=100, learning_rate=0.5, random_state=42)`
+    - `n_estimators=100`:
+    Menentukan jumlah weak learners (model lemah), yaitu berapa kali boosting dilakukan. Semakin besar nilainya, potensi akurasi meningkat, tapi juga risiko overfitting jika terlalu banyak.
+    - `learning_rate=0.5`:
+    Mengontrol kontribusi tiap model lemah dalam membentuk prediksi akhir. Semakin kecil nilainya, pelatihan lebih hati-hati (stabil) tapi bisa lebih lama.
+    - `random_state=42`:
+    Untuk memastikan hasil yang konsisten setiap kali model dijalankan. Ini penting untuk reprodusibilitas (jika tidak diberi ini hasil berubah-ubah).
+  3. Training Model
+    `ada.fit(X_train_smote, y_train_smote)`
+    - Model dilatih menggunakan data pelatihan yang sudah diseimbangkan oleh SMOTE (`X_train_smote`, `y_train_smote`) untuk mengatasi masalah data tidak seimbang (stroke vs non-stroke).
+  4. Melakukan Prediksi
+    `y_pred_ada = ada.predict(X_test)`
+    - Model digunakan untuk memprediksi kelas pada data uji (`X_test`), menghasilkan label: apakah pasien berisiko stroke atau tidak.
+  5. Prediksi Probabilitas
+    `y_pred_proba_ada = ada.predict_proba(X_test)[:,1]`
+    - Menghasilkan probabilitas dari setiap prediksi, terutama kemungkinan kelas “Stroke” (kelas 1).
 
 ## Evaluation
 Pada bagian ini kita akan menyebutkan metrik evaluasi yang digunakan. Lalu anda perlu menjelaskan hasil proyek berdasarkan metrik evaluasi yang digunakan.
