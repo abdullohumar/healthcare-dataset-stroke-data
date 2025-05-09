@@ -28,7 +28,7 @@ Referensi :
 
 Berdasarkan latar belakang tersebut, maka rincian permasalahan yang dapat dibahas pada proyek ini yakni:
   1. Fitur apa saja yang paling berpengaruh terhadap kemungkinan seseorang mengalami stroke berdasarkan data demografis dan medis yang tersedia?
-  2. Model machine learning mana yang memberikan performa terbaik dalam memprediksi risiko stroke, dilihat dari metrik evaluasi seperti Mean Squared Error (MSE)?
+  2. Model machine learning mana yang memberikan performa terbaik dalam memprediksi risiko stroke, dilihat dari metrik evaluasi ?
   3. Bagaimana perbandingan performa model pada data pelatihan dan pengujian dalam hal overfitting atau underfitting, dan apa implikasinya terhadap keandalan model tersebut?
 
 ### Goals
@@ -372,5 +372,42 @@ Model memiliki kemampuan yang baik dalam membedakan antara kelas stroke dan non-
   - Karena tujuan utamanya adalah mendeteksi semua kasus stroke (high recall), maka AdaBoost bisa menjadi kandidat utama.
   - Namun, trade-off dengan precision harus diperhatikan, karena terlalu banyak false positive juga berisiko dalam konteks medis.
   - Evaluasi lebih lanjut dengan cross-validation dan tuning bisa dilakukan, atau mencoba metode lain seperti ensemble model stacking.
+
+### Evaluasi Keseluruhan
+
+#### 🔍 Keterkaitan dengan Business Understanding
+
+Model yang dievaluasi memiliki dampak langsung terhadap tujuan bisnis yaitu mendeteksi risiko stroke sedini mungkin untuk intervensi medis. Hasil evaluasi menunjukkan bahwa model AdaBoost, meskipun memiliki akurasi yang lebih rendah dari XGBoost, justru menjadi kandidat terbaik dari sudut pandang bisnis karena recall-nya tinggi, yaitu mampu mengenali 73.9% kasus stroke aktual. Dalam dunia medis, kemampuan mendeteksi kasus stroke lebih penting daripada sekadar menghindari prediksi salah (false positives).
+
+#### ✅ Evaluasi Problem Statements
+
+1. **Fitur paling berpengaruh terhadap stroke**:
+
+   * Problem ini *belum dijawab secara lengkap* dalam tahap evaluasi. Meski telah dilakukan analisis korelasi pada EDA, tidak ada *feature importance* pada model (seperti dari Random Forest atau XGBoost) yang ditampilkan untuk mendukung interpretasi hasil prediksi.
+2. **Model terbaik berdasarkan metrik evaluasi**:
+
+   * Sudah *terjawab*. Model AdaBoost memberikan kombinasi terbaik antara ROC-AUC dan recall. Model XGBoost meski akurasinya tinggi, gagal mengenali kasus stroke.
+3. **Perbandingan performa terhadap overfitting dan underfitting**:
+
+   * Sudah *terjawab*. Evaluasi menggunakan nilai MSE dan perbedaan kinerja train-test menjelaskan potensi overfitting (terutama pada XGBoost).
+
+#### 🎯 Evaluasi Goals
+
+| Goals                                 | Status           | Penjelasan                                                                                                                                 |
+| ------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Identifikasi fitur paling berpengaruh | ❌ Belum tercapai | Analisis korelasi tersedia, namun tidak ada penjabaran *feature importance* dari model ML yang digunakan.                                  |
+| Membangun model prediktif yang akurat | ✅ Tercapai       | Model AdaBoost memberikan hasil yang menjanjikan dari sudut pandang bisnis meski precision masih perlu ditingkatkan.                       |
+| Menilai generalisasi model            | ✅ Tercapai       | Evaluasi dengan data uji dan selisih MSE menunjukkan tingkat generalisasi model yang baik, terutama pada AdaBoost dan Logistic Regression. |
+
+#### 💡 Dampak Solusi terhadap Permasalahan
+
+* **Solusi 1 (Perbandingan model)** berdampak langsung dengan memberikan hasil yang bisa dibandingkan dari sisi performa.
+* **Solusi 2 (Tuning model)** belum terlihat di tahap evaluasi. Tuning seperti `learning_rate` atau `max_depth` pada AdaBoost belum dijelaskan lebih lanjut.
+
+#### 📌 Rekomendasi Lanjutan
+
+* Tambahkan analisis *feature importance* agar stakeholder non-teknis bisa memahami faktor risiko stroke secara lebih jelas.
+* Tuning lebih lanjut pada model AdaBoost dapat membantu meningkatkan precision tanpa mengorbankan recall secara signifikan.
+* Pertimbangkan visualisasi interaktif hasil prediksi untuk mendukung adopsi model dalam sistem klinis.
 
 **---Ini adalah bagian akhir laporan---**
